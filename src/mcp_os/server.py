@@ -22,6 +22,7 @@ from datetime import datetime, timezone
 
 from mcp.server.fastmcp import FastMCP
 
+from . import whatsapp
 from .sandbox import Sandbox, SandboxError
 
 
@@ -44,9 +45,13 @@ mcp = FastMCP(
         "A sandboxed file-system server. All paths are relative to a fixed "
         "root directory; paths that escape the root are rejected. Use "
         "list_directory to explore, read_file/write_file for contents, and "
-        "search_files to find files by glob pattern."
+        "search_files to find files by glob pattern. WhatsApp tools "
+        "(whatsapp_*) send/receive messages via the WhatsApp Business Cloud API."
     ),
 )
+
+# Register the WhatsApp integrator (tools + inbound webhook).
+whatsapp.register(mcp)
 
 
 def _format_time(ts: float) -> str:

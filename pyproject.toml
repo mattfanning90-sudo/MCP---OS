@@ -9,6 +9,8 @@ authors = [{ name = "mcp-os" }]
 keywords = ["mcp", "model-context-protocol", "filesystem", "llm"]
 dependencies = [
     "mcp[cli]>=1.2.0",
+    "httpx>=0.27",
+    "starlette>=0.37",
 ]
 
 [project.scripts]

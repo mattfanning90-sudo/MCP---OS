@@ -24,6 +24,45 @@ rejected.
 
 Write/delete tools are disabled when the server runs in read-only mode.
 
+### WhatsApp integrator
+
+Send and receive WhatsApp messages via Meta's official **WhatsApp Business
+Cloud API**.
+
+| Tool | Description |
+| --- | --- |
+| `whatsapp_status` | Report whether sending/receiving is configured (never reveals the token). |
+| `whatsapp_send_text(to, body, preview_url=False)` | Send a free-form text message. |
+| `whatsapp_send_template(to, template_name, language, variables)` | Send a pre-approved template (needed to start a conversation). |
+| `whatsapp_send_media(to, media_type, link, caption, filename)` | Send an image/video/document/audio by public URL. |
+| `whatsapp_get_inbox(limit=20, clear=False)` | Read buffered inbound messages and delivery statuses. |
+
+Inbound messages and delivery statuses arrive via a webhook served at
+`/whatsapp/webhook`:
+
+- `GET /whatsapp/webhook` — Meta's verification handshake (echoes
+  `hub.challenge` when `hub.verify_token` matches `WHATSAPP_VERIFY_TOKEN`).
+- `POST /whatsapp/webhook` — receives notifications, which are buffered in
+  memory (last 500 events) and read back with `whatsapp_get_inbox`.
+
+Configure the WhatsApp App in [Meta for Developers](https://developers.facebook.com/)
+to point its webhook at `https://<your-host>/whatsapp/webhook` and subscribe to
+the `messages` field.
+
+WhatsApp environment variables:
+
+| Variable | Default | Meaning |
+| --- | --- | --- |
+| `WHATSAPP_ACCESS_TOKEN` | — | Graph API access token (required to send). |
+| `WHATSAPP_PHONE_NUMBER_ID` | — | Cloud API phone number ID to send from (required to send). |
+| `WHATSAPP_API_VERSION` | `v21.0` | Graph API version. |
+| `WHATSAPP_GRAPH_BASE` | `https://graph.facebook.com` | Graph API base URL. |
+| `WHATSAPP_VERIFY_TOKEN` | — | Shared token for the inbound webhook handshake. |
+
+> Note: outside the 24-hour customer-service window, WhatsApp only allows
+> pre-approved **template** messages to initiate a conversation; free-form
+> text is restricted to replies within that window.
+
 ## Configuration
 
 All configuration is via environment variables:
@@ -81,8 +120,9 @@ Layout:
 ```
 src/mcp_os/
   sandbox.py   # path confinement (the security boundary)
-  server.py    # FastMCP server + tool definitions
-tests/         # sandbox + tool tests
+  server.py    # FastMCP server + file-system tools
+  whatsapp.py  # WhatsApp Cloud API integrator (tools + webhook)
+tests/         # sandbox + tool + whatsapp tests
 ```
 
 ## Security notes
